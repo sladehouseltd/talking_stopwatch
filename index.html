@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="A talking stopwatch for yoga practice that announces elapsed time">
+    <title>Yoga Timer</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .timer-display {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .time {
+            font-size: 4rem;
+            font-weight: 200;
+            letter-spacing: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #059669;
+        }
+
+        .btn-start.paused {
+            background: #f59e0b;
+        }
+
+        .btn-start.paused:hover {
+            background: #d97706;
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .settings {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .settings h2 {
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .interval-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .interval-btn {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .interval-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .interval-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .setting-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .voice-selector-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+
+        .voice-select {
+            flex: 1;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .voice-select option {
+            background: #667eea;
+            color: white;
+        }
+
+        .voice-select:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .preview-btn {
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .preview-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .install-prompt {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .install-prompt.show {
+            display: block;
+        }
+
+        .install-btn {
+            margin-top: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            background: white;
+            color: #667eea;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .time {
+                font-size: 3rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            button {
+                font-size: 1rem;
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Yoga Timer</h1>
+
+        <div class="timer-display">
+            <div class="time" id="timeDisplay">00:00</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-start" id="startBtn">Start</button>
+            <button class="btn-reset" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="settings">
+            <div class="setting-section">
+                <h2>Announcement Interval</h2>
+                <div class="interval-options">
+                    <button class="interval-btn" data-interval="15">15s</button>
+                    <button class="interval-btn active" data-interval="30">30s</button>
+                    <button class="interval-btn" data-interval="45">45s</button>
+                    <button class="interval-btn" data-interval="60">60s</button>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <h2>Voice</h2>
+                <div class="voice-selector-container">
+                    <select class="voice-select" id="voiceSelect">
+                        <option value="">Loading voices...</option>
+                    </select>
+                    <button class="preview-btn" id="previewBtn">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="install-prompt" id="installPrompt">
+            <p>Install this app for easy access during yoga practice!</p>
+            <button class="install-btn" id="installBtn">Install App</button>
+        </div>
+    </div>
+
+    <script>
+        // Timer state
+        let startTime = null;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let isRunning = false;
+        let announcementInterval = 30; // seconds
+        let lastAnnouncement = 0;
+        let wakeLock = null;
+        let selectedVoice = null;
+        let availableVoices = [];
+
+        // DOM elements
+        const timeDisplay = document.getElementById('timeDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const intervalBtns = document.querySelectorAll('.interval-btn');
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const previewBtn = document.getElementById('previewBtn');
+
+        // Load saved interval preference
+        const savedInterval = localStorage.getItem('announcementInterval');
+        if (savedInterval) {
+            announcementInterval = parseInt(savedInterval);
+            intervalBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.interval === savedInterval);
+            });
+        }
+
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Load available voices
+        function loadVoices() {
+            availableVoices = speechSynthesis.getVoices();
+
+            if (availableVoices.length > 0) {
+                voiceSelect.innerHTML = '';
+
+                // Group voices by language
+                const grouped = {};
+                availableVoices.forEach((voice, index) => {
+                    const lang = voice.lang.split('-')[0];
+                    if (!grouped[lang]) grouped[lang] = [];
+                    grouped[lang].push({ voice, index });
+                });
+
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Default Voice';
+                voiceSelect.appendChild(defaultOption);
+
+                // Prioritize English voices
+                const langOrder = ['en', ...Object.keys(grouped).filter(l => l !== 'en').sort()];
+
+                langOrder.forEach(lang => {
+                    if (grouped[lang]) {
+                        grouped[lang].forEach(({ voice, index }) => {
+                            const option = document.createElement('option');
+                            option.value = index;
+                            option.textContent = `${voice.name} (${voice.lang})`;
+                            voiceSelect.appendChild(option);
+                        });
+                    }
+                });
+
+                // Load saved voice preference
+                const savedVoice = localStorage.getItem('selectedVoice');
+                if (savedVoice) {
+                    voiceSelect.value = savedVoice;
+                    selectedVoice = availableVoices[parseInt(savedVoice)] || null;
+                }
+            }
+        }
+
+        // Initialize voices
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
+
+        // Speak the elapsed time
+        function announceTime(seconds) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance();
+
+                if (seconds < 60) {
+                    utterance.text = `${seconds} seconds`;
+                } else {
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    if (secs === 0) {
+                        utterance.text = mins === 1 ? '1 minute' : `${mins} minutes`;
+                    } else {
+                        utterance.text = `${mins} ${mins === 1 ? 'minute' : 'minutes'} ${secs} ${secs === 1 ? 'second' : 'seconds'}`;
+                    }
+                }
+
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+
+                // Use selected voice if available
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Speak text (for preview)
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Update timer display
+        function updateTimer() {
+            const currentTime = Date.now();
+            const totalElapsed = Math.floor((currentTime - startTime + elapsedTime) / 1000);
+
+            timeDisplay.textContent = formatTime(totalElapsed);
+
+            // Check if we should announce
+            if (totalElapsed > 0 && totalElapsed % announcementInterval === 0 && totalElapsed !== lastAnnouncement) {
+                lastAnnouncement = totalElapsed;
+                announceTime(totalElapsed);
+            }
+        }
+
+        // Request wake lock to keep screen on
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake Lock released');
+                    });
+                }
+            } catch (err) {
+                console.error('Wake Lock error:', err);
+            }
+        }
+
+        // Release wake lock
+        async function releaseWakeLock() {
+            if (wakeLock) {
+                await wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        // Start/Pause button
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                // Start
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 100);
+                isRunning = true;
+                startBtn.textContent = 'Pause';
+                startBtn.classList.add('paused');
+                requestWakeLock();
+            } else {
+                // Pause
+                clearInterval(timerInterval);
+                elapsedTime += Date.now() - startTime;
+                isRunning = false;
+                startBtn.textContent = 'Resume';
+                releaseWakeLock();
+            }
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            startTime = null;
+            elapsedTime = 0;
+            lastAnnouncement = 0;
+            isRunning = false;
+            timeDisplay.textContent = '00:00';
+            startBtn.textContent = 'Start';
+            startBtn.classList.remove('paused');
+            releaseWakeLock();
+        });
+
+        // Interval selection
+        intervalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!isRunning) {
+                    announcementInterval = parseInt(btn.dataset.interval);
+                    localStorage.setItem('announcementInterval', announcementInterval);
+                    intervalBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+            });
+        });
+
+        // Voice selection
+        voiceSelect.addEventListener('change', () => {
+            const voiceIndex = voiceSelect.value;
+
+            if (voiceIndex === '') {
+                selectedVoice = null;
+                localStorage.removeItem('selectedVoice');
+            } else {
+                selectedVoice = availableVoices[parseInt(voiceIndex)];
+                localStorage.setItem('selectedVoice', voiceIndex);
+            }
+        });
+
+        // Preview voice
+        previewBtn.addEventListener('click', () => {
+            speak('30 seconds');
+        });
+
+        // PWA Install
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.classList.add('show');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                deferredPrompt = null;
+                installPrompt.classList.remove('show');
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA installed');
+            installPrompt.classList.remove('show');
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed'));
+            });
+        }
+
+        // Re-acquire wake lock when page becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isRunning) {
+                requestWakeLock();
+            }
+        });
+    </script>
+</body>
+</html>

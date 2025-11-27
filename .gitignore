@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies (if npm/yarn added later)
+node_modules/
+
+# Logs
+*.log
