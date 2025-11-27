@@ -2,7 +2,7 @@
   "name": "Yoga Timer - Talking Stopwatch",
   "short_name": "Yoga Timer",
   "description": "A talking stopwatch for yoga practice that announces elapsed time at configurable intervals",
-  "start_url": "/",
+  "start_url": "/talking_stopwatch/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#6366f1",

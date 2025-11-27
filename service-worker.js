@@ -1,9 +1,9 @@
 const CACHE_NAME = 'yoga-timer-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon.svg'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon.svg'
 ];
 
 // Install service worker and cache resources
